@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -24,10 +25,16 @@ type SQLiteConfig struct {
 type TelegramConfig struct {
 	Token   string
 	BotName string
-	AuthId  string
+	AuthId  int64
 }
 
 func LoadConfig() (*Config, error) {
+	// todo
+	authIdStr := os.Getenv("TELEGRAM_AUTH_ID")
+	token := os.Getenv("TELEGRAM_TOKEN")
+
+	authId, _ := strconv.ParseInt(authIdStr, 10, 64)
+
 	cfg := &Config{
 		Logs: LogConfig{
 			Style: os.Getenv("LOG_STYLE"),
@@ -37,9 +44,9 @@ func LoadConfig() (*Config, error) {
 			hz: os.Getenv("LOG_LEVEL"),
 		},
 		Telegram: TelegramConfig{
-			Token:   os.Getenv("TELEGRAM_TOKEN"),
+			Token:   token,
 			BotName: os.Getenv("TELEGRAM_BOT_NAME"),
-			AuthId:  os.Getenv("TELEGRAM_AUTH_ID"),
+			AuthId:  authId,
 		},
 	}
 	return cfg, nil
