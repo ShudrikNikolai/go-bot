@@ -5,48 +5,48 @@ import (
 	"strconv"
 
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
-	Logs     LogConfig
-	DB       SQLiteConfig
 	Telegram TelegramConfig
-}
-
-type LogConfig struct {
-	Style string
-	Level string
-}
-
-type SQLiteConfig struct {
-	hz string
 }
 
 type TelegramConfig struct {
 	Token   string
 	BotName string
 	AuthId  int64
+	ChatId  int64
 }
 
-func LoadConfig() (*Config, error) {
-	// todo
-	authIdStr := os.Getenv("TELEGRAM_AUTH_ID")
+func InitConfig() (*Config, error) {
 	token := os.Getenv("TELEGRAM_TOKEN")
+	botName := os.Getenv("TELEGRAM_BOT_NAME")
+	chatIdStr := os.Getenv("TELEGRAM_CHAT_ID")
+	authIdStr := os.Getenv("TELEGRAM_AUTH_ID")
 
-	authId, _ := strconv.ParseInt(authIdStr, 10, 64)
+	if authIdStr == "" || token == "" || botName == "" || chatIdStr == "" {
+		logrus.Fatal("missing required telegram configuration", token, botName, chatIdStr, authIdStr)
+	}
+
+	authId, err := strconv.ParseInt(authIdStr, 10, 64)
+
+	if err != nil {
+		logrus.Fatal("telegram configuration incorrect")
+	}
+
+	chatId, err := strconv.ParseInt(chatIdStr, 10, 64)
+
+	if err != nil {
+		logrus.Fatal("telegram configuration incorrect")
+	}
 
 	cfg := &Config{
-		Logs: LogConfig{
-			Style: os.Getenv("LOG_STYLE"),
-			Level: os.Getenv("LOG_LEVEL"),
-		},
-		DB: SQLiteConfig{
-			hz: os.Getenv("LOG_LEVEL"),
-		},
 		Telegram: TelegramConfig{
 			Token:   token,
-			BotName: os.Getenv("TELEGRAM_BOT_NAME"),
 			AuthId:  authId,
+			ChatId:  chatId,
+			BotName: botName,
 		},
 	}
 	return cfg, nil
